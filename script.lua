@@ -36,7 +36,7 @@ local function createToggle(name, text, defaultOn)
 end
 local treeToggle = createToggle("TreeToggle", "See Through Trees", false)
 local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects", false)
-local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1", false)
+local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1 Effects", false)
 local crackToggle = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
 local cloneToggle = createToggle("CloneToggle", "Remove After Effects Clone", false)
 local jumpToggle = createToggle("JumpToggle", "Auto Jump", false)
@@ -154,7 +154,7 @@ RunService.PreRender:Connect(function()
     if cloneActive then
         local cloneRig = thrownFolder:FindFirstChild("Clone_Rig")
         if cloneRig then cloneRig:Destroy() end
-        end
+    end
     for _, child in ipairs(terrain:GetChildren()) do
         if child.Name == "SmokeBack" or child:IsA("Attachment") then
             child:Destroy()
