@@ -3,6 +3,7 @@ local thrownFolder = workspace.Thrown
 local liveFolder = workspace.Live
 local esperFolder = game:GetService("ReplicatedStorage").Resources.EsperAwakening
 local RunService = game:GetService("RunService")
+local player = game:GetService("Players").LocalPlayer
 
 local keepList = {
     ["Aura"] = true,
@@ -15,15 +16,56 @@ local keepList = {
     ["EsperAura"] = true
 }
 
-for _, tree in ipairs(treesFolder:GetChildren()) do
-    if tree.Tree:FindFirstChild("TreeRoot") then
-        tree.Tree.TreeRoot.Transparency = 0.65
-    end
-    for _, part in ipairs(tree.Tree:GetChildren()) do
-            part.Transparency = 0.65
-            part.CastShadow = false
+local topbarBase = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame.AutoActivate
+local treeToggle = topbarBase:Clone()
+treeToggle.Name = "TreeToggle"
+treeToggle.Parent = topbarBase.Parent
+treeToggle.IconButton.IconLabel.Text = "See through trees"
+treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172715"
+
+treeToggle.IconOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+treeToggle.IconOverlay.BackgroundTransparency = 1
+
+local function setTreeState(isTransparent)
+    for _, tree in ipairs(treesFolder:GetChildren()) do
+        if tree.Tree:FindFirstChild("TreeRoot") then
+            tree.Tree.TreeRoot.Transparency = isTransparent and 0.65 or 0
+        end
+        for _, part in ipairs(tree.Tree:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = isTransparent and 0.65 or 0
+                part.CastShadow = not isTransparent
+            end
+        end
     end
 end
+
+local function updateToggle()
+    local img = treeToggle.IconButton.IconImage.Image
+    if img == "rbxassetid://12343172777" then
+        setTreeState(true)
+    elseif img == "rbxassetid://12343172715" then
+        setTreeState(false)
+    end
+end
+
+treeToggle.IconButton.MouseEnter:Connect(function()
+    treeToggle.IconOverlay.BackgroundTransparency = 0.9
+end)
+
+treeToggle.IconButton.MouseLeave:Connect(function()
+    treeToggle.IconOverlay.BackgroundTransparency = 1
+end)
+
+treeToggle.IconButton.MouseButton1Click:Connect(function()
+    if treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172715" then
+        treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172777"
+    else
+        treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172715"
+    end
+end)
+
+treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateToggle)
 
 for _, item in ipairs(esperFolder:GetChildren()) do
     if not keepList[item.Name] then
@@ -78,3 +120,5 @@ RunService.PreRender:Connect(function()
         end
     end
 end)
+
+updateToggle()
