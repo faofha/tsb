@@ -1,8 +1,11 @@
 local treesFolder = workspace.Map.Trees
 local thrownFolder = workspace.Thrown
 local liveFolder = workspace.Live
+local terrain = workspace.Terrain
 local esperFolder = game:GetService("ReplicatedStorage").Resources.EsperAwakening
 local purpleFolder = game:GetService("ReplicatedStorage").Resources:FindFirstChild("PurpleM1")
+local crackFolder = game:GetService("ReplicatedStorage").Resources.LegacyReplication:FindFirstChild("garcrack")
+local circleSmoke = game:GetService("ReplicatedStorage").Resources.LegacyReplication:FindFirstChild("CircleSmoke")
 local RunService = game:GetService("RunService")
 local player = game:GetService("Players").LocalPlayer
 local keepList = {
@@ -16,12 +19,12 @@ local keepList = {
     ["EsperAura"] = true
 }
 local topbarBase = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame.AutoActivate
-local function createToggle(name, text)
+local function createToggle(name, text, defaultOn)
     local btn = topbarBase:Clone()
     btn.Name = name
     btn.Parent = topbarBase.Parent
     btn.IconButton.IconLabel.Text = text
-    btn.IconButton.IconImage.Image = "rbxassetid://12343172715"
+    btn.IconButton.IconImage.Image = defaultOn and "rbxassetid://12343172777" or "rbxassetid://12343172715"
     btn.IconOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     btn.IconOverlay.BackgroundTransparency = 1
     btn.IconButton.MouseEnter:Connect(function() btn.IconOverlay.BackgroundTransparency = 0.9 end)
@@ -31,10 +34,15 @@ local function createToggle(name, text)
     end)
     return btn
 end
-local treeToggle = createToggle("TreeToggle", "See Through Trees")
-local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects")
-local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1")
-local jumpToggle = createToggle("JumpToggle", "Auto Jump")
+local treeToggle = createToggle("TreeToggle", "See Through Trees", false)
+local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects", false)
+local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1", false)
+local crackToggle = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
+local cloneToggle = createToggle("CloneToggle", "Remove After Effects Clone", false)
+local jumpToggle = createToggle("JumpToggle", "Auto Jump", false)
+if circleSmoke and circleSmoke:FindFirstChild("Attachment") and circleSmoke.Attachment:FindFirstChild("UpSmoke") then
+    circleSmoke.Attachment.UpSmoke.Texture = "rbxassetid://0"
+end
 local function setTreeState()
     local isTransparent = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     for _, tree in ipairs(treesFolder:GetChildren()) do
@@ -46,6 +54,23 @@ local function setTreeState()
                 part.Transparency = isTransparent and 0.65 or 0
                 part.CastShadow = not isTransparent
             end
+        end
+    end
+end
+local function setCrackState()
+    if not crackFolder then return end
+    local isNormal = crackToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
+    local crackIds = {
+        ["Crack"] = "rbxassetid://10186322998",
+        ["Crack1"] = "rbxassetid://10186322998",
+        ["Crack2"] = "rbxassetid://10186322998",
+        ["Crack3"] = "rbxassetid://10186322998",
+        ["Crack4"] = "rbxassetid://10253382415"
+    }
+    for name, id in pairs(crackIds) do
+        local obj = crackFolder:FindFirstChild(name)
+        if obj and obj:IsA("Decal") then
+            obj.Texture = isNormal and id or "rbxassetid://0"
         end
     end
 end
@@ -95,6 +120,7 @@ local function setJumpState()
 end
 treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setTreeState)
 purpleToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setPurpleState)
+crackToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setCrackState)
 jumpToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setJumpState)
 player.CharacterAdded:Connect(function() task.wait(1) setJumpState() end)
 for _, item in ipairs(esperFolder:GetChildren()) do
@@ -119,16 +145,28 @@ for _, desc in ipairs(workspace:GetDescendants()) do applyOverride(desc) end
 workspace.DescendantAdded:Connect(applyOverride)
 RunService.PreRender:Connect(function()
     local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
-    local smokez, smoke, debris = thrownFolder:FindFirstChild("BodySmokez"), thrownFolder:FindFirstChild("BodySmoke"), thrownFolder:FindFirstChild("Debris")
-    if smokez then smokez:Destroy() end
-    if smoke then smoke:Destroy() end
-    if debris then debris:Destroy() end
-    local target = liveFolder:FindFirstChild("dzrfklsfklgjhi")
+    local cloneActive = cloneToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
+    local itemsToKill = {"BodySmokez", "BodySmoke", "Debris", "SmallDebris"}
+    for _, name in ipairs(itemsToKill) do
+        local item = thrownFolder:FindFirstChild(name)
+        if item then item:Destroy() end
+    end
+    if cloneActive then
+        local cloneRig = thrownFolder:FindFirstChild("Clone_Rig")
+        if cloneRig then cloneRig:Destroy() end
+        end
+    for _, child in ipairs(terrain:GetChildren()) do
+        if child.Name == "SmokeBack" or child:IsA("Attachment") then
+            child:Destroy()
+        end
+    end
+    local target = liveFolder:FindFirstChild(player.Name)
     if target and waterActive then
         local fists = target:FindFirstChild("HunterFists")
         if fists then fists:Destroy() end
         for _, side in ipairs({"Right Arm", "Left Arm"}) do
-            local palm = target:FindFirstChild(side) and target[side]:FindFirstChild("WaterPalm")
+            local part = target:FindFirstChild(side)
+            local palm = part and part:FindFirstChild("WaterPalm")
             if palm then
                 if palm:FindFirstChild("ConstantEmit") then palm.ConstantEmit:Destroy() end
                 if palm:FindFirstChild("WaterTrail") then palm.WaterTrail.Texture = "rbxassetid://0" end
@@ -138,4 +176,5 @@ RunService.PreRender:Connect(function()
 end)
 setTreeState()
 setPurpleState()
+setCrackState()
 setJumpState()
