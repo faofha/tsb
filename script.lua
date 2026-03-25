@@ -4,7 +4,6 @@ local liveFolder = workspace.Live
 local esperFolder = game:GetService("ReplicatedStorage").Resources.EsperAwakening
 local RunService = game:GetService("RunService")
 local player = game:GetService("Players").LocalPlayer
-
 local keepList = {
     ["Aura"] = true,
     ["WindTimeGreen"] = true,
@@ -15,18 +14,30 @@ local keepList = {
     ["EsperVa2r"] = true,
     ["EsperAura"] = true
 }
-
 local topbarBase = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame.AutoActivate
-local treeToggle = topbarBase:Clone()
-treeToggle.Name = "TreeToggle"
-treeToggle.Parent = topbarBase.Parent
-treeToggle.IconButton.IconLabel.Text = "See through trees"
-treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172715"
-
-treeToggle.IconOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-treeToggle.IconOverlay.BackgroundTransparency = 1
-
-local function setTreeState(isTransparent)
+local function createToggle(name, text)
+    local btn = topbarBase:Clone()
+    btn.Name = name
+    btn.Parent = topbarBase.Parent
+    btn.IconButton.IconLabel.Text = text
+    btn.IconButton.IconImage.Image = "rbxassetid://12343172715"
+    btn.IconOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.IconOverlay.BackgroundTransparency = 1
+    btn.IconButton.MouseEnter:Connect(function() btn.IconOverlay.BackgroundTransparency = 0.9 end)
+    btn.IconButton.MouseLeave:Connect(function() btn.IconOverlay.BackgroundTransparency = 1 end)
+    btn.IconButton.MouseButton1Click:Connect(function()
+        if btn.IconButton.IconImage.Image == "rbxassetid://12343172715" then
+            btn.IconButton.IconImage.Image = "rbxassetid://12343172777"
+        else
+            btn.IconButton.IconImage.Image = "rbxassetid://12343172715"
+        end
+    end)
+    return btn
+end
+local treeToggle = createToggle("TreeToggle", "See Through Trees")
+local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects")
+local function setTreeState()
+    local isTransparent = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     for _, tree in ipairs(treesFolder:GetChildren()) do
         if tree.Tree:FindFirstChild("TreeRoot") then
             tree.Tree.TreeRoot.Transparency = isTransparent and 0.65 or 0
@@ -39,73 +50,43 @@ local function setTreeState(isTransparent)
         end
     end
 end
-
-local function updateToggle()
-    local img = treeToggle.IconButton.IconImage.Image
-    if img == "rbxassetid://12343172777" then
-        setTreeState(true)
-    elseif img == "rbxassetid://12343172715" then
-        setTreeState(false)
-    end
-end
-
-treeToggle.IconButton.MouseEnter:Connect(function()
-    treeToggle.IconOverlay.BackgroundTransparency = 0.9
-end)
-
-treeToggle.IconButton.MouseLeave:Connect(function()
-    treeToggle.IconOverlay.BackgroundTransparency = 1
-end)
-
-treeToggle.IconButton.MouseButton1Click:Connect(function()
-    if treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172715" then
-        treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172777"
-    else
-        treeToggle.IconButton.IconImage.Image = "rbxassetid://12343172715"
-    end
-end)
-
-treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateToggle)
-
+treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setTreeState)
 for _, item in ipairs(esperFolder:GetChildren()) do
     if not keepList[item.Name] then
         item:Destroy()
     end
 end
-
 local function applyOverride(obj)
+    local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     if obj.Name == "WaterTrail" and obj:IsA("Trail") then
-        obj.Texture = "rbxassetid://0"
+        if waterActive then obj.Texture = "rbxassetid://0" end
         obj:GetPropertyChangedSignal("Texture"):Connect(function()
-            if obj.Texture ~= "rbxassetid://0" then
+            if waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777" and obj.Texture ~= "rbxassetid://0" then
                 obj.Texture = "rbxassetid://0"
             end
         end)
-    elseif obj.Name == "ConstantEmit" or obj.Name == "BodySmokez" or obj.Name == "BodySmoke" or obj.Name == "Debris" or obj.Name == "HunterFists" then
+    elseif (obj.Name == "ConstantEmit" or obj.Name == "HunterFists") and waterActive then
+        obj:Destroy()
+    elseif obj.Name == "BodySmokez" or obj.Name == "BodySmoke" or obj.Name == "Debris" then
         obj:Destroy()
     end
 end
-
 for _, desc in ipairs(workspace:GetDescendants()) do
     applyOverride(desc)
 end
-
 workspace.DescendantAdded:Connect(applyOverride)
-
 RunService.PreRender:Connect(function()
+    local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local smokez = thrownFolder:FindFirstChild("BodySmokez")
     local smoke = thrownFolder:FindFirstChild("BodySmoke")
     local debris = thrownFolder:FindFirstChild("Debris")
-    
     if smokez then smokez:Destroy() end
     if smoke then smoke:Destroy() end
     if debris then debris:Destroy() end
-    
     local targetModel = liveFolder:FindFirstChild("dzrfklsfklgjhi")
-    if targetModel then
+    if targetModel and waterActive then
         local hunterFists = targetModel:FindFirstChild("HunterFists")
         if hunterFists then hunterFists:Destroy() end
-        
         local arms = {"Right Arm", "Left Arm"}
         for _, armName in ipairs(arms) do
             local arm = targetModel:FindFirstChild(armName)
@@ -113,12 +94,10 @@ RunService.PreRender:Connect(function()
             if waterPalm then
                 local constantEmit = waterPalm:FindFirstChild("ConstantEmit")
                 local waterTrail = waterPalm:FindFirstChild("WaterTrail")
-                
                 if constantEmit then constantEmit:Destroy() end
-                if waterTrail then applyOverride(waterTrail) end
+                if waterTrail then waterTrail.Texture = "rbxassetid://0" end
             end
         end
     end
 end)
-
-updateToggle()
+setTreeState()
