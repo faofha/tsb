@@ -36,6 +36,7 @@ local function createToggle(name, text)
 end
 local treeToggle = createToggle("TreeToggle", "See Through Trees")
 local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects")
+local jumpToggle = createToggle("JumpToggle", "Auto Jump")
 local function setTreeState()
     local isTransparent = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     for _, tree in ipairs(treesFolder:GetChildren()) do
@@ -50,7 +51,21 @@ local function setTreeState()
         end
     end
 end
+local function setJumpState()
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.AutoJumpEnabled = (jumpToggle.IconButton.IconImage.Image == "rbxassetid://12343172777")
+        end
+    end
+end
 treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setTreeState)
+jumpToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setJumpState)
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    setJumpState()
+end)
 for _, item in ipairs(esperFolder:GetChildren()) do
     if not keepList[item.Name] then
         item:Destroy()
@@ -101,3 +116,4 @@ RunService.PreRender:Connect(function()
     end
 end)
 setTreeState()
+setJumpState()
