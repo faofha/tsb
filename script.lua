@@ -2,6 +2,7 @@ local treesFolder = workspace.Map.Trees
 local thrownFolder = workspace.Thrown
 local liveFolder = workspace.Live
 local esperFolder = game:GetService("ReplicatedStorage").Resources.EsperAwakening
+local purpleFolder = game:GetService("ReplicatedStorage").Resources:FindFirstChild("PurpleM1")
 local RunService = game:GetService("RunService")
 local player = game:GetService("Players").LocalPlayer
 local keepList = {
@@ -26,16 +27,13 @@ local function createToggle(name, text)
     btn.IconButton.MouseEnter:Connect(function() btn.IconOverlay.BackgroundTransparency = 0.9 end)
     btn.IconButton.MouseLeave:Connect(function() btn.IconOverlay.BackgroundTransparency = 1 end)
     btn.IconButton.MouseButton1Click:Connect(function()
-        if btn.IconButton.IconImage.Image == "rbxassetid://12343172715" then
-            btn.IconButton.IconImage.Image = "rbxassetid://12343172777"
-        else
-            btn.IconButton.IconImage.Image = "rbxassetid://12343172715"
-        end
+        btn.IconButton.IconImage.Image = (btn.IconButton.IconImage.Image == "rbxassetid://12343172715") and "rbxassetid://12343172777" or "rbxassetid://12343172715"
     end)
     return btn
 end
 local treeToggle = createToggle("TreeToggle", "See Through Trees")
 local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects")
+local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1")
 local jumpToggle = createToggle("JumpToggle", "Auto Jump")
 local function setTreeState()
     local isTransparent = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
@@ -51,25 +49,56 @@ local function setTreeState()
         end
     end
 end
-local function setJumpState()
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.AutoJumpEnabled = (jumpToggle.IconButton.IconImage.Image == "rbxassetid://12343172777")
-        end
+local function setPurpleState()
+    if not purpleFolder then return end
+    local active = purpleToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
+    local cone = purpleFolder.Cone.Cone
+    cone.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://6665452633"
+    cone.Mesh.TextureId = active and "rbxassetid://0" or "rbxassetid://6665452633"
+    cone.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(11.313, 73.867, 10.411)
+    cone.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12460756787"
+    cone.Decal.Transparency = active and 1 or 0.3
+    local lastE = purpleFolder.Last.End
+    lastE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    lastE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.7, 0.591, 0.571)
+    lastE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12363773628"
+    local lastS = purpleFolder.Last.Start
+    lastS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    lastS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
+    lastS.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12363773628"
+    lastS.Decal.Transparency = active and 1 or 0
+    local longE = purpleFolder.Long.End
+    longE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    longE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
+    longE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
+    local longS = purpleFolder.Long.Start
+    longS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    longS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(0.866, 0.048, 0.046)
+    longS.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
+    longS.Decal.Transparency = active and 1 or 0
+    local trailGroups = {purpleFolder.FasterM1Trail, purpleFolder.M1Trail}
+    for _, group in ipairs(trailGroups) do
+        group.New.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+        group.NewSide.Texture = active and "rbxassetid://0" or "rbxassetid://1177196540"
+        group.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
+        group:GetChildren()[4].Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
     end
+    purpleFolder.Trail.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+    purpleFolder.Trail:GetChildren()[2].Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
+    purpleFolder.Trail3.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+    purpleFolder.Trail3:GetChildren()[2].Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
+end
+local function setJumpState()
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.AutoJumpEnabled = (jumpToggle.IconButton.IconImage.Image == "rbxassetid://12343172777") end
 end
 treeToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setTreeState)
+purpleToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setPurpleState)
 jumpToggle.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(setJumpState)
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    setJumpState()
-end)
+player.CharacterAdded:Connect(function() task.wait(1) setJumpState() end)
 for _, item in ipairs(esperFolder:GetChildren()) do
-    if not keepList[item.Name] then
-        item:Destroy()
-    end
+    if not keepList[item.Name] then item:Destroy() end
 end
 local function applyOverride(obj)
     local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
@@ -86,34 +115,27 @@ local function applyOverride(obj)
         obj:Destroy()
     end
 end
-for _, desc in ipairs(workspace:GetDescendants()) do
-    applyOverride(desc)
-end
+for _, desc in ipairs(workspace:GetDescendants()) do applyOverride(desc) end
 workspace.DescendantAdded:Connect(applyOverride)
 RunService.PreRender:Connect(function()
     local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
-    local smokez = thrownFolder:FindFirstChild("BodySmokez")
-    local smoke = thrownFolder:FindFirstChild("BodySmoke")
-    local debris = thrownFolder:FindFirstChild("Debris")
+    local smokez, smoke, debris = thrownFolder:FindFirstChild("BodySmokez"), thrownFolder:FindFirstChild("BodySmoke"), thrownFolder:FindFirstChild("Debris")
     if smokez then smokez:Destroy() end
     if smoke then smoke:Destroy() end
     if debris then debris:Destroy() end
-    local targetModel = liveFolder:FindFirstChild("dzrfklsfklgjhi")
-    if targetModel and waterActive then
-        local hunterFists = targetModel:FindFirstChild("HunterFists")
-        if hunterFists then hunterFists:Destroy() end
-        local arms = {"Right Arm", "Left Arm"}
-        for _, armName in ipairs(arms) do
-            local arm = targetModel:FindFirstChild(armName)
-            local waterPalm = arm and arm:FindFirstChild("WaterPalm")
-            if waterPalm then
-                local constantEmit = waterPalm:FindFirstChild("ConstantEmit")
-                local waterTrail = waterPalm:FindFirstChild("WaterTrail")
-                if constantEmit then constantEmit:Destroy() end
-                if waterTrail then waterTrail.Texture = "rbxassetid://0" end
+    local target = liveFolder:FindFirstChild("dzrfklsfklgjhi")
+    if target and waterActive then
+        local fists = target:FindFirstChild("HunterFists")
+        if fists then fists:Destroy() end
+        for _, side in ipairs({"Right Arm", "Left Arm"}) do
+            local palm = target:FindFirstChild(side) and target[side]:FindFirstChild("WaterPalm")
+            if palm then
+                if palm:FindFirstChild("ConstantEmit") then palm.ConstantEmit:Destroy() end
+                if palm:FindFirstChild("WaterTrail") then palm.WaterTrail.Texture = "rbxassetid://0" end
             end
         end
     end
 end)
 setTreeState()
+setPurpleState()
 setJumpState()
