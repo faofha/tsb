@@ -32,7 +32,8 @@ local keepList = {
     ["EsperVa2r"] = true,
     ["EsperAura"] = true
 }
-local topbarBase = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame.AutoActivate
+local topbarContainer = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame
+local topbarBase = topbarContainer.AutoActivate
 local treeToggle, waterToggle, purpleToggle, crackToggle, cloneToggle, jumpToggle
 local function saveSettings()
     if not (treeToggle and waterToggle and purpleToggle and crackToggle and cloneToggle and jumpToggle) then return end
@@ -47,9 +48,11 @@ local function saveSettings()
     writefile(fileName, HttpService:JSONEncode(settings))
 end
 local function createToggle(name, text, defaultOn)
+    local existing = topbarContainer:FindFirstChild(name)
+    if existing then existing:Destroy() end
     local btn = topbarBase:Clone()
     btn.Name = name
-    btn.Parent = topbarBase.Parent
+    btn.Parent = topbarContainer
     btn.IconButton.IconLabel.Text = text
     local isOn = defaultOn
     if savedData and savedData[name] ~= nil then
