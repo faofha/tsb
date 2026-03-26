@@ -96,6 +96,7 @@ local function setPurpleState()
     longE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
     longE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
     longE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
+
     local longS = purpleFolder.Long.Start
     longS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
     longS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(0.866, 0.048, 0.046)
@@ -146,6 +147,7 @@ workspace.DescendantAdded:Connect(applyOverride)
 RunService.PreRender:Connect(function()
     local waterActive = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local cloneActive = cloneToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
+    local treesActive = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local itemsToKill = {"BodySmokez", "BodySmoke", "Debris", "SmallDebris"}
     for _, name in ipairs(itemsToKill) do
         local item = thrownFolder:FindFirstChild(name)
@@ -158,6 +160,21 @@ RunService.PreRender:Connect(function()
     for _, child in ipairs(terrain:GetChildren()) do
         if child.Name == "SmokeBack" or child:IsA("Attachment") then
             child:Destroy()
+        end
+    end
+    if treesActive then
+        for _, tree in ipairs(treesFolder:GetChildren()) do
+            local treeGroup = tree:FindFirstChild("Tree")
+            if treeGroup then
+                local root = treeGroup:FindFirstChild("TreeRoot")
+                if root and root.Transparency ~= 0.65 then root.Transparency = 0.65 end
+                for _, part in ipairs(treeGroup:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        if part.Transparency ~= 0.65 then part.Transparency = 0.65 end
+                        if part.CastShadow then part.CastShadow = false end
+                    end
+                end
+            end
         end
     end
     local target = liveFolder:FindFirstChild(player.Name)
