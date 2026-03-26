@@ -8,6 +8,20 @@ local crackFolder = game:GetService("ReplicatedStorage").Resources.LegacyReplica
 local circleSmoke = game:GetService("ReplicatedStorage").Resources.LegacyReplication:FindFirstChild("CircleSmoke")
 local RunService = game:GetService("RunService")
 local player = game:GetService("Players").LocalPlayer
+local HttpService = game:GetService("HttpService")
+local folderName = "tsb-faofha"
+local fileName = folderName .. "/settings.json"
+if not isfolder(folderName) then
+    makefolder(folderName)
+end
+local function loadSettings()
+    if isfile(fileName) then
+        local success, data = pcall(function() return HttpService:JSONDecode(readfile(fileName)) end)
+        if success then return data end
+    end
+    return nil
+end
+local savedData = loadSettings()
 local keepList = {
     ["Aura"] = true,
     ["WindTimeGreen"] = true,
@@ -19,27 +33,45 @@ local keepList = {
     ["EsperAura"] = true
 }
 local topbarBase = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame.AutoActivate
+local treeToggle, waterToggle, purpleToggle, crackToggle, cloneToggle, jumpToggle
+local function saveSettings()
+    if not (treeToggle and waterToggle and purpleToggle and crackToggle and cloneToggle and jumpToggle) then return end
+    local settings = {
+        TreeToggle = treeToggle.IconButton.IconImage.Image == "rbxassetid://12343172777",
+        WaterToggle = waterToggle.IconButton.IconImage.Image == "rbxassetid://12343172777",
+        PurpleToggle = purpleToggle.IconButton.IconImage.Image == "rbxassetid://12343172777",
+        CrackToggle = crackToggle.IconButton.IconImage.Image == "rbxassetid://12343172777",
+        CloneToggle = cloneToggle.IconButton.IconImage.Image == "rbxassetid://12343172777",
+        JumpToggle = jumpToggle.IconButton.IconImage.Image == "rbxassetid://12343172777"
+    }
+    writefile(fileName, HttpService:JSONEncode(settings))
+end
 local function createToggle(name, text, defaultOn)
     local btn = topbarBase:Clone()
     btn.Name = name
     btn.Parent = topbarBase.Parent
     btn.IconButton.IconLabel.Text = text
-    btn.IconButton.IconImage.Image = defaultOn and "rbxassetid://12343172777" or "rbxassetid://12343172715"
+    local isOn = defaultOn
+    if savedData and savedData[name] ~= nil then
+        isOn = savedData[name]
+    end
+    btn.IconButton.IconImage.Image = isOn and "rbxassetid://12343172777" or "rbxassetid://12343172715"
     btn.IconOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     btn.IconOverlay.BackgroundTransparency = 1
     btn.IconButton.MouseEnter:Connect(function() btn.IconOverlay.BackgroundTransparency = 0.9 end)
     btn.IconButton.MouseLeave:Connect(function() btn.IconOverlay.BackgroundTransparency = 1 end)
     btn.IconButton.MouseButton1Click:Connect(function()
         btn.IconButton.IconImage.Image = (btn.IconButton.IconImage.Image == "rbxassetid://12343172715") and "rbxassetid://12343172777" or "rbxassetid://12343172715"
+        saveSettings()
     end)
     return btn
 end
-local treeToggle = createToggle("TreeToggle", "See Through Trees", false)
-local waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects", false)
-local purpleToggle = createToggle("PurpleToggle", "Remove Purple M1 Effects", false)
-local crackToggle = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
-local cloneToggle = createToggle("CloneToggle", "Remove After Effects Clone", false)
-local jumpToggle = createToggle("JumpToggle", "Auto Jump", false)
+treeToggle = createToggle("TreeToggle", "See Through Trees", false)
+waterToggle = createToggle("WaterToggle", "Remove Water M1 Effects", false)
+purpleToggle = createToggle("PurpleToggle", "Remove Purple M1 Effects", false)
+crackToggle = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
+cloneToggle = createToggle("CloneToggle", "Remove After Effects Clone", false)
+jumpToggle = createToggle("JumpToggle", "Auto Jump", false)
 if circleSmoke and circleSmoke:FindFirstChild("Attachment") and circleSmoke.Attachment:FindFirstChild("UpSmoke") then
     circleSmoke.Attachment.UpSmoke.Texture = "rbxassetid://0"
 end
@@ -96,7 +128,6 @@ local function setPurpleState()
     longE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
     longE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
     longE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
-
     local longS = purpleFolder.Long.Start
     longS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
     longS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(0.866, 0.048, 0.046)
