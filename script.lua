@@ -98,7 +98,7 @@ end
 local treeT = createToggle("TreeToggle", "See Through Trees", false)
 local waterT = createToggle("WaterToggle", "Remove Water M1", false)
 local purpleT = createToggle("PurpleToggle", "Remove Purple M1", false)
-local crackT = createToggle("CrackToggle", "HH Ground Cracks", true)
+local crackT = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
 local cloneT = createToggle("CloneToggle", "Remove After Clones", false)
 local jumpT = createToggle("JumpToggle", "Auto Jump", false)
 local lockT = createToggle("LockToggle", "Lock Menu FPS, Ping", true)
@@ -121,7 +121,7 @@ local function updateTrees()
 end
 local function updateCracks()
     if not crackFolder then return end
-    local isNormal = crackT.IconButton.IconImage.Image == "rbxassetid://12343172715"
+    local isNormal = crackT.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local crackIds = {["Crack"] = "rbxassetid://10186322998", ["Crack1"] = "rbxassetid://10186322998", ["Crack2"] = "rbxassetid://10186322998", ["Crack3"] = "rbxassetid://10186322998", ["Crack4"] = "rbxassetid://10253382415"}
     for name, id in pairs(crackIds) do
         local obj = crackFolder:FindFirstChild(name)
@@ -132,18 +132,40 @@ local function updatePurple()
     if not purpleFolder then return end
     local active = purpleT.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local cone = purpleFolder.Cone.Cone
+    cone.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://6665452633"
+    cone.Mesh.TextureId = active and "rbxassetid://0" or "rbxassetid://6665452633"
     cone.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(11.313, 73.867, 10.411)
+    cone.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12460756787"
     cone.Decal.Transparency = active and 1 or 0.3
-    for _, part in ipairs({purpleFolder.Last.End, purpleFolder.Last.Start, purpleFolder.Long.End, purpleFolder.Long.Start}) do
-        part.Mesh.Scale = active and Vector3.new(0,0,0) or part.Mesh.Scale
-        part.Decal.Transparency = active and 1 or 0
+    local lastE = purpleFolder.Last.End
+    lastE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    lastE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.7, 0.591, 0.571)
+    lastE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12363773628"
+    local lastS = purpleFolder.Last.Start
+    lastS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    lastS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
+    lastS.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://12363773628"
+    lastS.Decal.Transparency = active and 1 or 0
+    local longE = purpleFolder.Long.End
+    longE.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    longE.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(1.489, 0.078, 0.076)
+    longE.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
+    local longS = purpleFolder.Long.Start
+    longS.Mesh.MeshId = active and "rbxassetid://0" or "rbxassetid://8501563708"
+    longS.Mesh.Scale = active and Vector3.new(0,0,0) or Vector3.new(0.866, 0.048, 0.046)
+    longS.Decal.Texture = active and "rbxassetid://0" or "rbxassetid://13020112504"
+    longS.Decal.Transparency = active and 1 or 0
+    local trailGroups = {purpleFolder.FasterM1Trail, purpleFolder.M1Trail}
+    for _, group in ipairs(trailGroups) do
+        group.New.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+        group.NewSide.Texture = active and "rbxassetid://0" or "rbxassetid://1177196540"
+        group.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
+        group:GetChildren()[4].Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
     end
-    local trails = {purpleFolder.FasterM1Trail, purpleFolder.M1Trail, purpleFolder.Trail, purpleFolder.Trail3}
-    for _, t in ipairs(trails) do
-        for _, obj in ipairs(t:GetDescendants()) do
-            if obj:IsA("Trail") or obj:IsA("Beam") then obj.Texture = active and "rbxassetid://0" or obj.Texture end
-        end
-    end
+    purpleFolder.Trail.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+    purpleFolder.Trail:GetChildren()[2].Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
+    purpleFolder.Trail3.Trail.Texture = active and "rbxassetid://0" or "rbxassetid://15939897388"
+    purpleFolder.Trail3:GetChildren()[2].Texture = active and "rbxassetid://0" or "rbxassetid://15412407507"
 end
 local function updateJump()
     local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
