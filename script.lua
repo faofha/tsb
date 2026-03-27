@@ -214,14 +214,23 @@ end
 RunService.PreRender:Connect(function()
     local waterActive = waterT.IconButton.IconImage.Image == "rbxassetid://12343172777"
     local cloneActive = cloneT.IconButton.IconImage.Image == "rbxassetid://12343172777"
-    local itemsToKill = {"BodySmokez", "BodySmoke", "Debris", "SmallDebris"}
-    for _, name in ipairs(itemsToKill) do
-        local item = thrownFolder:FindFirstChild(name)
-        if item then item:Destroy() end
-    end
-    if cloneActive then
-        local rig = thrownFolder:FindFirstChild("Clone_Rig")
-        if rig then rig:Destroy() end
+    local itemsToKill = {
+        ["BodySmokez"] = true, ["BodySmoke"] = true, ["Debris"] = true, 
+        ["SmallDebris"] = true, ["DebrisggbbTf"] = true, ["WooshTwo"] = true
+    }
+    for _, child in ipairs(thrownFolder:GetChildren()) do
+        if itemsToKill[child.Name] then
+            child:Destroy()
+        elseif child.Name == "Debris2g" then
+            local s1 = child:FindFirstChild("SmokeOne")
+            local us = child:FindFirstChild("UpSmoke")
+            local t2 = child:FindFirstChild("TrailTwo")
+            if s1 then s1:Destroy() end
+            if us then us:Destroy() end
+            if t2 then t2:Destroy() end
+        elseif child.Name == "Clone_Rig" and cloneActive then
+            child:Destroy()
+        end
     end
     for _, child in ipairs(terrain:GetChildren()) do
         if child.Name == "SmokeBack" or child:IsA("Attachment") then child:Destroy() end
