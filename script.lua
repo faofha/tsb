@@ -101,6 +101,7 @@ local purpleT = createToggle("PurpleToggle", "Remove Purple M1", false)
 local crackT = createToggle("CrackToggle", "Hero Hunter Ground Cracks", true)
 local cloneT = createToggle("CloneToggle", "Remove After Clones", false)
 local jumpT = createToggle("JumpToggle", "Auto Jump", false)
+local guiT = createToggle("GuiToggle", "FPS, Ping GUI", false)
 local lockT = createToggle("LockToggle", "Lock Menu FPS, Ping", true)
 if circleSmoke and circleSmoke:FindFirstChild("Attachment") and circleSmoke.Attachment:FindFirstChild("UpSmoke") then
     circleSmoke.Attachment.UpSmoke.Texture = "rbxassetid://0"
@@ -171,10 +172,14 @@ local function updateJump()
     local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     if hum then hum.AutoJumpEnabled = (jumpT.IconButton.IconImage.Image == "rbxassetid://12343172777") end
 end
+local function updateGuiVisibility()
+    frame.Visible = (guiT.IconButton.IconImage.Image == "rbxassetid://12343172777")
+end
 treeT.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateTrees)
 purpleT.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updatePurple)
 crackT.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateCracks)
 jumpT.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateJump)
+guiT.IconButton.IconImage:GetPropertyChangedSignal("Image"):Connect(updateGuiVisibility)
 player.CharacterAdded:Connect(function() task.wait(1) updateJump() end)
 for _, item in ipairs(esperFolder:GetChildren()) do
     if not keepList[item.Name] then item:Destroy() end
@@ -211,7 +216,7 @@ end)
 local dragging, dragInput, dragStart, startPos
 frame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if lockT.IconButton.IconImage.Image == "rbxassetid://12343172715" then
+        if lockT.IconButton.IconImage.Image == "rbxassetid://12343172715" and frame.Visible then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
@@ -254,3 +259,4 @@ updateTrees()
 updatePurple()
 updateCracks()
 updateJump()
+updateGuiVisibility()
