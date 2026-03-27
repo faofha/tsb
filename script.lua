@@ -78,6 +78,7 @@ local function saveSettings()
 end
 local topbarContainer = player.PlayerGui.TopbarPlus.TopbarContainer:GetChildren()[7].DropdownContainer.DropdownFrame
 local topbarBase = topbarContainer.AutoActivate
+local isMobile = topbarContainer:FindFirstChild("UnnamedIcon") ~= nil
 local function createToggle(name, text, defaultOn)
     local existing = topbarContainer:FindFirstChild(name)
     if existing then existing:Destroy() end
@@ -85,9 +86,35 @@ local function createToggle(name, text, defaultOn)
     btn.Name = name
     btn.Parent = topbarContainer
     btn.IconButton.IconLabel.Text = text
+    local overlay = btn:FindFirstChild("IconOverlay") or Instance.new("Frame")
+    overlay.Name = "IconOverlay"
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.ZIndex = btn.IconButton.ZIndex + 1
+    overlay.Parent = btn
     local isOn = defaultOn
     if savedData and savedData[name] ~= nil then isOn = savedData[name] end
     btn.IconButton.IconImage.Image = isOn and "rbxassetid://12343172777" or "rbxassetid://12343172715"
+    if not isMobile then
+        btn.IconButton.MouseEnter:Connect(function()
+            overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            overlay.BackgroundTransparency = 0.9
+        end)
+        btn.IconButton.MouseLeave:Connect(function()
+            overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            overlay.BackgroundTransparency = 1
+        end)
+        btn.IconButton.MouseButton1Down:Connect(function()
+            overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            overlay.BackgroundTransparency = 0.7
+        end)
+        btn.IconButton.MouseButton1Up:Connect(function()
+            overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            overlay.BackgroundTransparency = 0.9
+        end)
+    end
     btn.IconButton.MouseButton1Click:Connect(function()
         btn.IconButton.IconImage.Image = (btn.IconButton.IconImage.Image == "rbxassetid://12343172715") and "rbxassetid://12343172777" or "rbxassetid://12343172715"
         saveSettings()
