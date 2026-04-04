@@ -4,8 +4,23 @@ local m1Keyword = "m1Mode"
 local loopInterval = 1.5
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
+local isMobile = false
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+local topbar = playerGui:FindFirstChild("TopbarPlus")
+if topbar then
+    local container = topbar:FindFirstChild("TopbarContainer")
+    if container then
+        local children = container:GetChildren()
+        if children[7] and children[7]:FindFirstChild("DropdownContainer") then
+            local frame = children[7].DropdownContainer:FindFirstChild("DropdownFrame")
+            if frame and frame:FindFirstChild("UnnamedIcon") then
+                isMobile = true
+            end
+        end
+    end
+end
 local m1LoopActive = false
-local function sendCommunicate(goal, key)
+local function sendCommunicate(goal, key, mobileFlag)
     local character = localPlayer.Character
     if character then
         local communicate = character:FindFirstChild("Communicate")
@@ -13,7 +28,8 @@ local function sendCommunicate(goal, key)
             local args = {
                 {
                     Goal = goal,
-                    Key = key
+                    Key = key,
+                    Mobile = mobileFlag
                 }
             }
             communicate:FireServer(unpack(args))
@@ -30,8 +46,13 @@ task.spawn(function()
                     task.wait(0.1)
                 end
             end
-            sendCommunicate("LeftClick")
-            sendCommunicate("LeftClickRelease")
+            if not isMobile then
+                sendCommunicate("LeftClick")
+                sendCommunicate("LeftClickRelease")
+            else
+                sendCommunicate("LeftClick", nil, true)
+                sendCommunicate("LeftClickRelease", nil, true)
+            end
         end
         task.wait(loopInterval) 
     end
@@ -40,9 +61,9 @@ local function onChatted(message)
     local msg = message:lower()
     if msg == blockKeyword:lower() then
         m1LoopActive = false
-        sendCommunicate("KeyPress", Enum.KeyCode.F)  
+        sendCommunicate("KeyPress", Enum.KeyCode.F)
     elseif msg == m1Keyword:lower() then
-        m1LoopActive = true   
+        m1LoopActive = true
     elseif msg == normalKeyword:lower() then
         m1LoopActive = false
         sendCommunicate("KeyRelease", Enum.KeyCode.F)
