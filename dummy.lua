@@ -20,6 +20,7 @@ if topbar then
     end
 end
 local m1LoopActive = false
+local isBlocking = false
 local function sendCommunicate(goal, key, mobileFlag)
     local character = localPlayer.Character
     if character then
@@ -38,14 +39,20 @@ local function sendCommunicate(goal, key, mobileFlag)
 end
 task.spawn(function()
     while true do
-        if m1LoopActive then
-            local liveFolder = workspace:FindFirstChild("Live")
-            local myLiveChar = liveFolder and liveFolder:FindFirstChild(localPlayer.Name)
-            if myLiveChar and myLiveChar:FindFirstChild("Freeze") then
-                while myLiveChar:FindFirstChild("Freeze") do
-                    task.wait(0.1)
-                end
+        local liveFolder = workspace:FindFirstChild("Live")
+        local myLiveChar = liveFolder and liveFolder:FindFirstChild(localPlayer.Name)
+        if myLiveChar and myLiveChar:FindFirstChild("Freeze") then
+            if isBlocking then
+                sendCommunicate("KeyRelease", Enum.KeyCode.F)
             end
+            while myLiveChar:FindFirstChild("Freeze") do
+                task.wait(0.1)
+            end
+            if isBlocking then
+                sendCommunicate("KeyPress", Enum.KeyCode.F)
+            end
+        end
+        if m1LoopActive then
             if not isMobile then
                 sendCommunicate("LeftClick")
                 sendCommunicate("LeftClickRelease")
@@ -54,18 +61,20 @@ task.spawn(function()
                 sendCommunicate("LeftClickRelease", nil, true)
             end
         end
-        task.wait(loopInterval) 
+        task.wait(loopInterval)
     end
 end)
 local function onChatted(message)
     local msg = message:lower()
     if msg == blockKeyword:lower() then
         m1LoopActive = false
+        isBlocking = true
         sendCommunicate("KeyPress", Enum.KeyCode.F)
     elseif msg == m1Keyword:lower() then
         m1LoopActive = true
     elseif msg == normalKeyword:lower() then
         m1LoopActive = false
+        isBlocking = false
         sendCommunicate("KeyRelease", Enum.KeyCode.F)
     end
 end
