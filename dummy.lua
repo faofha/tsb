@@ -48,10 +48,15 @@ task.spawn(function()
             while myLiveChar:FindFirstChild("Freeze") do
                 task.wait(0.1)
             end
+            task.wait(0.1)
             if isBlocking then
                 sendCommunicate("KeyPress", Enum.KeyCode.F)
+                task.delay(0.2, function()
+                    if isBlocking then sendCommunicate("KeyPress", Enum.KeyCode.F) end
+                end)
             end
         end
+
         if m1LoopActive then
             if not isMobile then
                 sendCommunicate("LeftClick")
@@ -71,7 +76,7 @@ local function onChatted(message)
         isBlocking = true
         sendCommunicate("KeyPress", Enum.KeyCode.F)
     elseif msg == m1Keyword:lower() then
-        m1LoopActive = true
+        m1LoopActive = true 
     elseif msg == normalKeyword:lower() then
         m1LoopActive = false
         isBlocking = false
